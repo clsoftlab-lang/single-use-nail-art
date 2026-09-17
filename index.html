@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<!--
+  SPDX-License-Identifier: Apache-2.0
+  Copyright 2026 CLSOFTLAB (씨엘소프트랩), Dr. Lee Il-guk (이일국)
+-->
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>글로우팁 · 일회용 네일아트</title>
+  <meta name="description" content="바르는 일회용 젤 네일아트 키트 쇼핑 데모 — 글리터·큐빅·프렌치·무광, 네일 미리보기, 컬러 추천, 정기구독." />
+  <link rel="stylesheet" href="./styles.css" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='11' y='4' width='10' height='20' rx='5' fill='%23e6789a'/%3E%3C/svg%3E" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo" aria-hidden="true">💅</span>
+      <div>
+        <strong>글로우팁</strong>
+        <small>일회용 네일아트</small>
+      </div>
+    </div>
+    <div class="topbar-actions">
+      <button id="reset-data" class="icon-btn" title="로컬 데이터 초기화">↺ 초기화</button>
+      <button id="open-cart" class="icon-btn cart-btn" aria-label="장바구니 열기">
+        🛒 <span id="cart-count" class="badge">0</span>
+      </button>
+    </div>
+  </header>
+
+  <nav class="tabs" aria-label="주요 메뉴">
+    <button class="tab-btn active" data-tab="catalog">카탈로그</button>
+    <button class="tab-btn" data-tab="preview">네일 미리보기</button>
+    <button class="tab-btn" data-tab="recommend">컬러 추천</button>
+    <button class="tab-btn" data-tab="subscription">정기구독</button>
+    <button class="tab-btn" data-tab="wishlist">찜 <span id="wish-count" class="badge dark">0</span></button>
+  </nav>
+
+  <main>
+    <!-- 카탈로그 -->
+    <section id="tab-catalog" class="tab-panel active">
+      <div class="hero">
+        <h1>바르는 일회용 젤 네일아트</h1>
+        <p>스티커 대신, 진짜 젤의 발색과 광택. 글리터·큐빅·프렌치·무광 원하는 스타일을 한 번만 즐겨요.</p>
+      </div>
+      <div class="filters" role="region" aria-label="필터">
+        <input id="search" type="search" placeholder="색상·이름·태그 검색" aria-label="검색" />
+        <label>스타일 <select id="f-style" aria-label="스타일 필터"><option value="all">전체</option></select></label>
+        <label>시즌 <select id="f-season" aria-label="시즌 필터"><option value="all">전체</option></select></label>
+        <label>톤 <select id="f-warm" aria-label="톤 필터"><option value="all">전체</option><option value="웜">웜톤</option><option value="쿨">쿨톤</option></select></label>
+        <label>정렬 <select id="f-sort" aria-label="정렬"><option value="popular">인기순</option><option value="rating">평점순</option><option value="priceLow">낮은 가격순</option><option value="priceHigh">높은 가격순</option></select></label>
+        <label class="price-filter">가격 <span id="price-label">전체</span>
+          <input id="f-price" type="range" min="0" max="16000" step="1000" value="0" aria-label="최대 가격" />
+        </label>
+        <button id="reset-filters" class="btn small ghost">필터 초기화</button>
+      </div>
+      <p id="result-count" class="result-count">0개 제품</p>
+      <div id="catalog-grid" class="grid"></div>
+    </section>
+
+    <!-- 미리보기 -->
+    <section id="tab-preview" class="tab-panel">
+      <div class="preview-wrap">
+        <div id="preview-stage" class="preview-stage"></div>
+        <div class="preview-controls">
+          <h2>네일 미리보기</h2>
+          <p>컬러를 고르면 손톱에 바로 입혀 볼 수 있어요.</p>
+          <p class="preview-current">현재: <strong id="preview-name">-</strong> · <span id="preview-style">-</span></p>
+          <div class="style-toggle" id="style-toggle" role="group" aria-label="스타일 선택">
+            <button data-style="글리터">글리터</button>
+            <button data-style="큐빅">큐빅</button>
+            <button data-style="프렌치">프렌치</button>
+            <button data-style="무광">무광</button>
+          </div>
+          <p class="chips-label">컬러 스와치</p>
+          <div id="shade-chips" class="shade-chips"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 추천 -->
+    <section id="tab-recommend" class="tab-panel">
+      <div class="hero">
+        <h1>컬러 매칭 추천</h1>
+        <p>피부톤과 상황을 고르면 어울리는 컬러를 추천해 드려요.</p>
+      </div>
+      <p class="chips-label">피부톤</p>
+      <div id="tone-pills" class="pills"></div>
+      <p class="chips-label">상황</p>
+      <div id="sit-pills" class="pills"></div>
+      <p id="recommend-copy" class="recommend-copy"></p>
+      <div id="recommend-grid" class="grid"></div>
+    </section>
+
+    <!-- 구독 -->
+    <section id="tab-subscription" class="tab-panel">
+      <div class="hero">
+        <h1>월간 컬러 박스</h1>
+        <p>매달 새로운 시즌 컬러를 문 앞으로. 언제든 해지할 수 있어요.</p>
+      </div>
+      <div id="subscription-grid" class="grid plans-grid"></div>
+    </section>
+
+    <!-- 찜 -->
+    <section id="tab-wishlist" class="tab-panel">
+      <div class="hero"><h1>찜한 컬러</h1><p>마음에 든 컬러를 모아두었어요.</p></div>
+      <div id="wishlist-grid" class="grid"></div>
+    </section>
+  </main>
+
+  <!-- 장바구니 드로어 -->
+  <div id="overlay" class="overlay"></div>
+  <aside id="cart-drawer" class="cart-drawer" aria-label="장바구니">
+    <div class="cart-head">
+      <h2>장바구니</h2>
+      <button id="close-cart" class="icon-btn" aria-label="닫기">✕</button>
+    </div>
+    <div id="cart-body" class="cart-body"></div>
+    <div class="cart-foot">
+      <div class="cart-total-row"><span>합계</span><strong id="cart-total">0원</strong></div>
+      <button id="checkout-btn" class="btn full" disabled>모의결제하기</button>
+      <p class="demo-note">데모 모드 — 실제 결제가 이루어지지 않습니다.</p>
+    </div>
+  </aside>
+
+  <!-- 상세 모달 -->
+  <dialog id="modal" class="modal">
+    <button id="modal-close" class="modal-close" aria-label="닫기">✕</button>
+    <div id="modal-body"></div>
+  </dialog>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <footer class="site-foot">
+    <p><strong>글로우팁</strong> — 일회용 네일아트 쇼핑 데모</p>
+    <p class="demo-note">데모 모드: 모든 제품과 결제·구독은 가상이며, 상태는 브라우저 localStorage에만 저장됩니다. 계정·개인정보를 수집하지 않습니다.</p>
+    <p class="small">Not an official Anthropic product. · Apache-2.0 / 문서 CC BY 4.0 · © 2026 CLSOFTLAB (씨엘소프트랩), Dr. Lee Il-guk (이일국)</p>
+  </footer>
+
+  <script type="module" src="./app.js"></script>
+</body>
+</html>

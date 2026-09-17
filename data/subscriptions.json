@@ -1,0 +1,8 @@
+{
+  "_comment": "SPDX-License-Identifier: Apache-2.0 | Copyright 2026 CLSOFTLAB (씨엘소프트랩), Dr. Lee Il-guk (이일국). 가상의 데모 데이터입니다 (fictional demo data).",
+  "plans": [
+    { "id": "box-lite", "name": "라이트 컬러박스", "cycle": "월간", "price": 12900, "itemsPerBox": 2, "desc": "매달 시즌 컬러 2종을 랜덤으로 배송해요.", "perks": ["시즌 큐레이션", "무료 배송", "언제든 해지"] },
+    { "id": "box-plus", "name": "플러스 컬러박스", "cycle": "월간", "price": 22900, "itemsPerBox": 4, "desc": "글리터·큐빅 포함 프리미엄 4종을 매달 배송해요.", "perks": ["프리미엄 큐레이션", "글리터/큐빅 포함", "무료 배송", "멤버 전용 컬러"] },
+    { "id": "box-couple", "name": "커플 컬러박스", "cycle": "월간", "price": 29900, "itemsPerBox": 6, "desc": "두 사람이 함께 즐기는 6종 커플 큐레이션.", "perks": ["커플 매칭 컬러", "6종 구성", "무료 배송", "기념일 스페셜"] }
+  ]
+}

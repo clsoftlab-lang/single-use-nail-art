@@ -1,0 +1,16 @@
+{
+  "_comment": "SPDX-License-Identifier: Apache-2.0 | Copyright 2026 CLSOFTLAB (씨엘소프트랩), Dr. Lee Il-guk (이일국). 가상의 데모 데이터입니다 (fictional demo data).",
+  "skinTones": [
+    { "id": "spring-warm", "label": "봄 웜톤", "warmCool": "웜", "hint": "화사하고 밝은 컬러가 잘 어울려요." },
+    { "id": "summer-cool", "label": "여름 쿨톤", "warmCool": "쿨", "hint": "맑고 시원한 파스텔이 잘 어울려요." },
+    { "id": "autumn-warm", "label": "가을 웜톤", "warmCool": "웜", "hint": "깊고 따뜻한 톤이 잘 어울려요." },
+    { "id": "winter-cool", "label": "겨울 쿨톤", "warmCool": "쿨", "hint": "선명하고 대비 강한 컬러가 잘 어울려요." }
+  ],
+  "situations": [
+    { "id": "데일리", "label": "데일리" },
+    { "id": "오피스", "label": "오피스" },
+    { "id": "데이트", "label": "데이트" },
+    { "id": "파티", "label": "파티" },
+    { "id": "웨딩", "label": "웨딩" }
+  ]
+}
