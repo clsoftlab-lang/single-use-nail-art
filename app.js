@@ -4,6 +4,7 @@
 import * as store from './modules/store.js';
 import { shadeRecommend, situationCopy } from './modules/recommend.js';
 import { renderHandSVG } from './modules/svgNails.js';
+import { askAI } from './ai/ai.js';
 
 const $ = (sel, root = document) => root.querySelector(sel);
 const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
@@ -154,6 +155,84 @@ function runRecommend() {
   });
 }
 
+// ---------- AI 어시스턴트 ----------
+// 공통: task 결과를 element 로 스트리밍(onToken 누적).
+async function streamInto(el, task, payload) {
+  el.classList.add('show', 'streaming');
+  el.textContent = '생각 중…';
+  let first = true;
+  try {
+    await askAI(task, payload, {
+      onToken: (chunk) => {
+        if (first) { el.textContent = ''; first = false; }
+        el.textContent += chunk;
+      },
+    });
+  } catch (err) {
+    el.textContent = 'AI 응답을 불러오지 못했어요. ' + (err && err.message ? err.message : '');
+  } finally {
+    el.classList.remove('streaming');
+  }
+}
+
+function renderAI() {
+  const sitOpts = state.meta.situations.map((s) => `<option value="${esc(s.id)}">${esc(s.label)}</option>`).join('');
+  $('#ai-sit').innerHTML = '<option value="">상관없음</option>' + sitOpts;
+  $('#ai-coordi-pills').innerHTML = state.meta.situations
+    .map((s, i) => `<button class="pill ${i === 0 ? 'on' : ''}" data-coordi="${esc(s.id)}">${esc(s.label)}</button>`)
+    .join('');
+}
+
+function appendChat(role, text) {
+  const log = $('#ai-chat-log');
+  const bubble = document.createElement('div');
+  bubble.className = 'ai-bubble ' + (role === 'user' ? 'me' : 'ai');
+  bubble.textContent = text;
+  log.appendChild(bubble);
+  log.scrollTop = log.scrollHeight;
+  return bubble;
+}
+
+function wireAI() {
+  // (1) 챗봇
+  $('#ai-chat-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const input = $('#ai-chat-input');
+    const msg = input.value.trim();
+    if (!msg) return;
+    appendChat('user', msg);
+    input.value = '';
+    const bubble = appendChat('ai', '생각 중…');
+    let first = true;
+    try {
+      await askAI('chat', {
+        message: msg,
+        warmCool: $('#ai-tone').value || undefined,
+        situation: $('#ai-sit').value || undefined,
+        products: state.products,
+      }, {
+        onToken: (chunk) => {
+          if (first) { bubble.textContent = ''; first = false; }
+          bubble.textContent += chunk;
+          $('#ai-chat-log').scrollTop = $('#ai-chat-log').scrollHeight;
+        },
+      });
+    } catch (err) {
+      bubble.textContent = 'AI 응답을 불러오지 못했어요. ' + (err && err.message ? err.message : '');
+    }
+  });
+
+  // (2) 상황별 코디
+  $('#ai-coordi-pills').addEventListener('click', (e) => {
+    const b = e.target.closest('.pill'); if (!b) return;
+    $$('#ai-coordi-pills .pill').forEach((x) => x.classList.toggle('on', x === b));
+  });
+  $('#ai-coordi-btn').addEventListener('click', () => {
+    const sit = $('#ai-coordi-pills .pill.on')?.dataset.coordi || '데일리';
+    streamInto($('#ai-coordi-out'), 'coordi', { situation: sit, products: state.products });
+  });
+}
+
 // ---------- 구독 ----------
 function renderSubscriptions() {
   const active = state.app.subscription;
@@ -206,7 +285,9 @@ function openDetail(id) {
           <button class="btn" data-add="${p.id}">장바구니 담기</button>
           <button class="btn ghost" data-wish="${p.id}">${wished ? '♥ 찜 해제' : '♡ 찜하기'}</button>
           <button class="btn ghost" data-preview="${p.id}">미리보기에 적용</button>
+          <button class="btn ghost" data-summarize="${p.id}">AI 요약 ✨</button>
         </div>
+        <div id="ai-summary-out" class="ai-out"></div>
         <h4>구성품</h4>
         <ul class="components">${p.components.map((c) => `<li>${esc(c)}</li>`).join('')}</ul>
         <h4>사용법</h4>
@@ -289,9 +370,15 @@ function showTab(name) {
 // ---------- 이벤트 위임 ----------
 function wireEvents() {
   document.body.addEventListener('click', (e) => {
-    const t = e.target.closest('[data-detail],[data-add],[data-wish],[data-preview],[data-shade],[data-sub],[data-tab],[data-inc],[data-dec],[data-rm]');
+    const t = e.target.closest('[data-detail],[data-add],[data-wish],[data-preview],[data-shade],[data-sub],[data-tab],[data-inc],[data-dec],[data-rm],[data-summarize]');
     if (!t) return;
     if (t.dataset.detail) { openDetail(t.dataset.detail); return; }
+    if (t.dataset.summarize) {
+      const p = state.products.find((x) => x.id === t.dataset.summarize);
+      const out = $('#ai-summary-out');
+      if (p && out) streamInto(out, 'summarize', { product: p });
+      return;
+    }
     if (t.dataset.add) {
       state.app = store.addToCart(state.app, t.dataset.add, 1);
       persist(); renderCart();
@@ -406,9 +493,11 @@ async function init() {
   state.preview = { hex: first.hex, accentHex: first.accentHex, style: first.style, name: first.name };
 
   wireEvents();
+  wireAI();
   renderCatalog();
   renderPreview();
   renderRecommend();
+  renderAI();
   renderSubscriptions();
   renderWishlist();
   renderCart();

@@ -33,6 +33,7 @@
     <button class="tab-btn active" data-tab="catalog">카탈로그</button>
     <button class="tab-btn" data-tab="preview">네일 미리보기</button>
     <button class="tab-btn" data-tab="recommend">컬러 추천</button>
+    <button class="tab-btn" data-tab="ai">AI 어시스턴트 ✨</button>
     <button class="tab-btn" data-tab="subscription">정기구독</button>
     <button class="tab-btn" data-tab="wishlist">찜 <span id="wish-count" class="badge dark">0</span></button>
   </nav>
@@ -91,6 +92,50 @@
       <div id="sit-pills" class="pills"></div>
       <p id="recommend-copy" class="recommend-copy"></p>
       <div id="recommend-grid" class="grid"></div>
+    </section>
+
+    <!-- AI 어시스턴트 -->
+    <section id="tab-ai" class="tab-panel">
+      <div class="hero">
+        <h1>AI 뷰티 어시스턴트 ✨</h1>
+        <p>피부톤·상황·취향을 알려주면 AI가 컬러와 코디를 추천해요.
+          <span class="demo-note">데모 모드: 백엔드 키 없이 목업으로 동작합니다. 실 AI는 <code>server/</code> 연결 시.</span>
+        </p>
+      </div>
+      <div class="ai-grid">
+        <!-- (1) 컬러/스타일 추천 챗봇 -->
+        <article class="ai-card">
+          <h2>💬 컬러·스타일 추천 챗봇</h2>
+          <div class="ai-picker">
+            <label>피부톤
+              <select id="ai-tone" aria-label="피부톤">
+                <option value="">상관없음</option>
+                <option value="웜">웜톤</option>
+                <option value="쿨">쿨톤</option>
+              </select>
+            </label>
+            <label>상황
+              <select id="ai-sit" aria-label="상황"></select>
+            </label>
+          </div>
+          <div id="ai-chat-log" class="ai-log" aria-live="polite"></div>
+          <form id="ai-chat-form" class="ai-form">
+            <input id="ai-chat-input" type="text" autocomplete="off"
+              placeholder="예: 봄 웜톤인데 데이트에 어울리는 컬러 추천해줘" aria-label="메시지 입력" />
+            <button class="btn" type="submit">보내기</button>
+          </form>
+        </article>
+
+        <!-- (2) 상황별 코디 추천 -->
+        <article class="ai-card">
+          <h2>👗 상황별 코디 추천</h2>
+          <p class="chips-label">상황을 고르세요</p>
+          <div id="ai-coordi-pills" class="pills"></div>
+          <button id="ai-coordi-btn" class="btn">코디 추천 받기</button>
+          <div id="ai-coordi-out" class="ai-out" aria-live="polite"></div>
+        </article>
+      </div>
+      <p class="demo-note">※ (3) 상품 설명·후기 AI 요약은 각 제품 상세 모달의 “AI 요약 ✨” 버튼에서 사용할 수 있어요.</p>
     </section>
 
     <!-- 구독 -->

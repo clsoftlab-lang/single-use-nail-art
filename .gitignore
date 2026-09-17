@@ -1,6 +1,12 @@
 # Dependencies
 node_modules/
 
+# Secrets — never commit real API keys (server-side only)
+.env
+.env.local
+*.env
+!*.env.example
+
 # OS / editor
 .DS_Store
 Thumbs.db

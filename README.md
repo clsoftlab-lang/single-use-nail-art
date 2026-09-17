@@ -67,7 +67,13 @@ modules/svgNails.js   # inline-SVG hand renderer
 data/products.json    # 34 fictional kits
 data/subscriptions.json  # 3 color-box plans
 data/recommend.json   # skin tones + occasions
-check.mjs             # verification / unit tests
+ai/config.js          # AI_ENDPOINT ("" ⇒ mock; a URL ⇒ real backend)
+ai/ai.js              # askAI(task, payload) — mock provider + streaming proxy client
+server/index.mjs      # backend proxy: POST /api/ai → Claude (claude-opus-5), key server-side
+server/package.json   # @anthropic-ai/sdk dependency
+server/.env.example   # ANTHROPIC_API_KEY placeholder (copy to .env, git-ignored)
+server/README.md      # backend run + security notes
+check.mjs             # verification / unit tests (incl. AI layer + key-leak scan)
 .github/workflows/ci.yml  # runs node check.mjs
 ```
 
@@ -94,6 +100,50 @@ check.mjs             # verification / unit tests
 - Documentation: **CC BY 4.0**
 
 **Not an official Anthropic product.**
+
+## 🤖 AI 기능 (API 연동)
+
+The app ships a small, pluggable **AI layer** with three features, all reachable from the
+**AI 어시스턴트 ✨** tab (and the product detail modal):
+
+1. **AI 네일 컬러/스타일 추천 챗봇** — describe your skin tone / occasion and get grounded shade
+   picks (reuses the app's products + `shadeRecommend`).
+2. **상황별 코디 추천** — pick an occasion and get an outfit + matching-nail suggestion.
+3. **상품 설명/후기 요약 생성** — the **AI 요약 ✨** button on any product summarizes its
+   description and reviews.
+
+### Demo = mock (default)
+
+With `ai/config.js` `AI_ENDPOINT` left empty (`""`), everything runs against a **deterministic
+Korean MockProvider** — no backend, no API key, no network. This is the default and what the live
+demo uses.
+
+### Enabling real AI (Claude)
+
+Real inference goes through the backend proxy in [`server/`](./server/) so that
+**keys stay server-side only — never in the browser or the repository.**
+
+```bash
+cd server
+npm install
+cp .env.example .env          # set ANTHROPIC_API_KEY=sk-...
+npm start                     # POST http://localhost:8787/api/ai  (model: claude-opus-5)
+```
+
+Then point the frontend at it:
+
+```js
+// ai/config.js
+export const AI_ENDPOINT = "http://localhost:8787/api/ai";
+```
+
+The browser sends `{ task, payload }` to the proxy; the proxy calls Claude
+(`client.messages.stream`, model **`claude-opus-5`**) and streams text back. `askAI()` streams the
+same way whether the source is the mock or the backend.
+
+> **🔒 API keys live server-side only.** Never place a key in `ai/config.js`, browser code, or any
+> committed file. `.env` is git-ignored; `.env.example` ships a placeholder. `check.mjs` fails the
+> build if `AI_ENDPOINT` is non-empty or a real key format appears anywhere in the repo.
 
 ## 🎓 Idea origin
 

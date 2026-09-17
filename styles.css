@@ -179,6 +179,45 @@ main { max-width: 1100px; margin: 0 auto; padding: 16px; }
 .pills { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 6px; }
 .recommend-copy { color: var(--accent); font-weight: 600; margin: 12px 0; }
 
+/* ---- AI assistant ---- */
+.ai-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
+.ai-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 18px; box-shadow: var(--shadow); display: flex; flex-direction: column; gap: 10px;
+}
+.ai-picker { display: flex; flex-wrap: wrap; gap: 10px; }
+.ai-picker label { display: flex; align-items: center; gap: 6px; font-size: .85rem; color: var(--muted); }
+.ai-picker select {
+  border: 1px solid var(--border); background: var(--surface-2); color: var(--text);
+  border-radius: 10px; padding: 7px 10px; font-size: .85rem;
+}
+.ai-log {
+  display: flex; flex-direction: column; gap: 8px;
+  min-height: 120px; max-height: 320px; overflow-y: auto;
+  background: var(--surface-2); border: 1px solid var(--border); border-radius: 12px; padding: 12px;
+}
+.ai-bubble {
+  max-width: 88%; padding: 9px 12px; border-radius: 14px; font-size: .9rem;
+  white-space: pre-wrap; word-break: break-word;
+}
+.ai-bubble.me { align-self: flex-end; background: var(--accent); color: #fff; border-bottom-right-radius: 4px; }
+.ai-bubble.ai { align-self: flex-start; background: var(--surface); border: 1px solid var(--border); border-bottom-left-radius: 4px; }
+.ai-form { display: flex; gap: 8px; }
+.ai-form input {
+  flex: 1; min-width: 0; border: 1px solid var(--border); background: var(--surface-2); color: var(--text);
+  border-radius: 10px; padding: 10px 12px; font-size: .9rem;
+}
+.ai-out {
+  display: none; white-space: pre-wrap; word-break: break-word;
+  background: var(--surface-2); border: 1px solid var(--border); border-radius: 12px;
+  padding: 12px; margin-top: 10px; font-size: .9rem;
+}
+.ai-out.show { display: block; }
+.ai-out.streaming::after, .ai-bubble.streaming::after {
+  content: '▍'; color: var(--accent); animation: ai-blink 1s steps(2) infinite;
+}
+@keyframes ai-blink { 50% { opacity: 0; } }
+
 /* ---- Plans ---- */
 .plans-grid { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
 .plan {
