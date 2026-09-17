@@ -45,6 +45,11 @@
         <h1>바르는 일회용 젤 네일아트</h1>
         <p>스티커 대신, 진짜 젤의 발색과 광택. 글리터·큐빅·프렌치·무광 원하는 스타일을 한 번만 즐겨요.</p>
       </div>
+      <!-- 오늘의 추천 (무인·on-load AI 다이제스트) -->
+      <section id="daily-pick" class="daily-pick" aria-label="오늘의 추천 네일">
+        <h2>🗓️ 오늘의 추천 네일 컬러/스타일 <small id="daily-pick-tag"></small></h2>
+        <p id="daily-pick-out" class="ai-out daily-pick-out" aria-live="polite"></p>
+      </section>
       <div class="filters" role="region" aria-label="필터">
         <input id="search" type="search" placeholder="색상·이름·태그 검색" aria-label="검색" />
         <label>스타일 <select id="f-style" aria-label="스타일 필터"><option value="all">전체</option></select></label>

@@ -167,7 +167,7 @@ function walkAll(dir) {
     if (e.name === 'node_modules' || e.name === '.git') continue;
     const full = join(dir, e.name);
     if (e.isDirectory()) out = out.concat(walkAll(full));
-    else if (/\.(mjs|js|json|md|css|html|yml|yaml|txt|example|env)$/.test(e.name)) out.push(full);
+    else if (/\.(mjs|js|json|md|css|html|yml|yaml|toml|txt|example|env)$/.test(e.name)) out.push(full);
   }
   return out;
 }

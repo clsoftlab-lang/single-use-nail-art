@@ -123,21 +123,36 @@ async function streamMock(text, onToken) {
  * @returns {Promise<string>} 전체 응답 텍스트
  */
 export async function askAI(task, payload = {}, { onToken } = {}) {
+  const endpoint = String(AI_ENDPOINT || '').trim();
   // 데모 모드: 백엔드 없이 결정론적 목업.
-  if (!AI_ENDPOINT) {
-    const fn = MOCK[task] || (() => '지원하지 않는 AI 요청이에요.');
-    return streamMock(fn(payload), onToken);
-  }
+  if (!endpoint) return runMock(task, payload, onToken);
 
   // 실 AI 모드: 백엔드 프록시로 POST 후 텍스트 스트림 수신.
-  const res = await fetch(AI_ENDPOINT, {
+  // 무인(never-breaks) 원칙: 프록시가 실패/429{fallback:true}/네트워크 오류면 내장 mock 으로
+  // 자동 폴백한다. 앱은 어떤 경우에도 멈추지 않는다.
+  try {
+    return await runRemote(endpoint, task, payload, onToken);
+  } catch (_err) {
+    return runMock(task, payload, onToken);
+  }
+}
+
+// 내장 MockProvider 호출(결정론적, onToken 스트리밍).
+function runMock(task, payload, onToken) {
+  const fn = MOCK[task] || (() => '지원하지 않는 AI 요청이에요.');
+  return streamMock(fn(payload), onToken);
+}
+
+// 원격 프록시 스트리밍. 429{fallback:true}/오류는 throw 하여 askAI 가 mock 으로 폴백하게 한다.
+async function runRemote(endpoint, task, payload, onToken) {
+  const res = await fetch(endpoint, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ task, payload }),
   });
-  if (!res.ok || !res.body) {
-    throw new Error(`AI 서버 응답 오류 (${res.status})`);
-  }
+  // 429 는 서버 가드레일(레이트/월 예산)의 폴백 신호. 토큰을 흘리기 전에 던져 mock 으로 폴백.
+  if (res.status === 429) throw new Error('AI_FALLBACK_429');
+  if (!res.ok || !res.body) throw new Error(`AI 서버 응답 오류 (${res.status})`);
   const reader = res.body.getReader();
   const decoder = new TextDecoder();
   let full = '';

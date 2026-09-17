@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "글로우팁(GlowTip) AI 백엔드 프록시 — 브라우저 대신 서버에서만 Claude(claude-opus-5)를 호출합니다.",
+  "description": "글로우팁(GlowTip) REFERENCE AI 백엔드 프록시 — 서버 측 키로만 Claude(기본 claude-haiku-4-5, 비용 우선)를 호출. 키는 절대 커밋하지 않습니다.",
   "main": "index.mjs",
   "scripts": {
     "start": "node index.mjs"

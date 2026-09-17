@@ -107,6 +107,17 @@ main { max-width: 1100px; margin: 0 auto; padding: 16px; }
 .price-filter { flex-direction: column; align-items: flex-start; gap: 2px; }
 .result-count { color: var(--muted); font-size: .85rem; margin: 4px 2px 12px; }
 
+/* ---- 오늘의 추천 (무인 on-load 다이제스트) ---- */
+.daily-pick {
+  background: var(--accent-soft); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 12px 16px; margin: 0 0 16px;
+}
+.daily-pick h2 { margin: 0 0 6px; font-size: 1.05rem; }
+.daily-pick h2 small { color: var(--muted); font-weight: 500; font-size: .78rem; }
+.daily-pick .daily-pick-out {
+  display: block; background: transparent; border: none; padding: 0; margin: 0; min-height: 1.2em;
+}
+
 /* ---- Grid & cards ---- */
 .grid {
   display: grid; gap: 14px;

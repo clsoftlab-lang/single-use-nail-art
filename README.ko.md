@@ -94,7 +94,7 @@ node check.mjs        # JSON 파싱 + 모든 JS node --check + index.html 컨테
 cd server
 npm install
 cp .env.example .env          # ANTHROPIC_API_KEY=sk-... 설정
-npm start                     # POST http://localhost:8787/api/ai  (모델: claude-opus-5)
+npm start                     # POST http://localhost:8787/api/ai  (모델: claude-haiku-4-5)
 ```
 
 그런 다음 프런트엔드를 연결합니다:
@@ -105,12 +105,37 @@ export const AI_ENDPOINT = "http://localhost:8787/api/ai";
 ```
 
 브라우저는 `{ task, payload }` 를 프록시로 보내고, 프록시가 Claude
-(`client.messages.stream`, 모델 **`claude-opus-5`**)를 호출해 텍스트를 스트리밍합니다.
-`askAI()` 는 목업이든 백엔드든 동일하게 스트리밍으로 응답합니다.
+(`client.messages.stream`, 기본 모델 **`claude-haiku-4-5`**, `AI_MODEL` 로 상향 가능)를 호출해
+텍스트를 스트리밍합니다. `askAI()` 는 목업이든 백엔드든 동일하게 스트리밍으로 응답하며, 백엔드
+실패 시 자동으로 mock 으로 폴백합니다(아래 **고도화** 참고).
 
 > **🔒 API 키는 서버 측에만.** `ai/config.js`·브라우저 코드·커밋되는 파일 어디에도 키를 넣지 마세요.
 > `.env` 는 git 에서 제외되고, `.env.example` 은 플레이스홀더만 담습니다. `check.mjs` 는
 > `AI_ENDPOINT` 가 비어 있지 않거나 실제 키 형식이 리포지토리에 있으면 빌드를 실패시킵니다.
+
+## ⚙️ 고도화 — 무인·저비용 실 AI 연동
+
+AI 레이어는 **무인 운영 + 합리적 비용**에 맞춰 조정되어 있습니다. 데모는 여전히 키·서버 없이
+100% 클라이언트 측 mock 으로 동작합니다.
+
+- **비용 우선 기본 모델.** 프록시 기본값은 **`claude-haiku-4-5`**(~**$1 / $5 per MTok** 입/출력)이며
+  `AI_MODEL` 로 교체 가능합니다(`claude-sonnet-5` / `claude-opus-5` 로 품질 상향).
+- **프롬프트 캐싱.** 태스크별 안정적 시스템 프롬프트를 캐시 블록(`cache_control: { type: 'ephemeral' }`)
+  으로 보내, 반복 호출 시 캐시를 읽어 비용을 낮춥니다.
+- **출력 상한 + 예산.** 태스크별 modest `max_tokens`(~700), IP당 분당 레이트 리밋(20/min),
+  월 토큰 예산(`AI_MONTHLY_TOKEN_CAP`, 기본 2,000,000). 초과 시 → `429 {fallback:true}`.
+- **대략적 비용 추정.** Haiku 4.5 + 프롬프트 캐싱 기준, 일반적인 grounded 요청은 대략
+  **~$0.003–0.005**, 즉 **≈ $3–5 / 1,000 requests** 수준입니다(입력·응답 길이에 따라 변동).
+- **무료 원클릭 배포(무인).** Cloudflare **Workers** 변형([`server/worker.js`](./server/worker.js)
+  + [`wrangler.toml`](./server/wrangler.toml))이 동일한 태스크 라우팅·캐싱 규칙으로 Anthropic REST
+  를 호출합니다 — 돌볼 서버가 없습니다. 배포: `wrangler secret put ANTHROPIC_API_KEY && wrangler deploy`.
+- **무인 mock 폴백.** 실패 / `429 {fallback:true}` / 네트워크 오류 시 `askAI()` 가 내장 mock 으로
+  자동 폴백해 앱이 **절대 멈추지 않습니다**. 카탈로그 진입 시 표시되는 **"🗓️ 오늘의 추천 네일
+  컬러/스타일"** 다이제스트도 shade recommender + `askAI` 로 만들어져 오프라인 mock 에서도 동작합니다.
+
+> **🔒 API 키는 서버 측에만 — 브라우저·저장소엔 절대.** 키는 서버 환경(또는 Worker 시크릿)에만
+> 존재합니다. `.env` 와 `wrangler.toml` 의 `[vars]` 에는 실제 키를 두지 않으며, `check.mjs` 는
+> `AI_ENDPOINT` 가 비어 있지 않거나 실제 `sk-ant-…` 키 형식이 나타나면 빌드를 실패시킵니다.
 
 ## 🎓 아이디어 출처
 

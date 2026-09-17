@@ -175,6 +175,58 @@ async function streamInto(el, task, payload) {
   }
 }
 
+// ---------- 오늘의 추천 (무인, on-load) ----------
+// 진입 시 현재 계절·시간대를 읽어 chat 태스크로 "오늘의 추천 컬러/스타일" 다이제스트를 만든다.
+// askAI(chat) 은 백엔드 없이도 내장 mock(shadeRecommend 재사용)으로 동작 → 오프라인 무인.
+// 세션당 1회만 생성해 캐시(탭 전환/재렌더마다 재호출 방지).
+const dailyPick = { text: '', done: false, running: false };
+
+function dailyContext() {
+  const now = new Date();
+  const m = now.getMonth(); // 0~11
+  const season = (m === 11 || m <= 1) ? '겨울' : m <= 4 ? '봄' : m <= 7 ? '여름' : '가을';
+  const warmCool = (season === '봄' || season === '가을') ? '웜' : '쿨';
+  const h = now.getHours();
+  const situation = h < 11 ? '오피스' : h < 17 ? '데일리' : h < 21 ? '데이트' : '파티';
+  const part = h < 11 ? '아침' : h < 17 ? '낮' : h < 21 ? '저녁' : '밤';
+  return { season, warmCool, situation, part };
+}
+
+async function renderDailyPick() {
+  const out = $('#daily-pick-out');
+  const tag = $('#daily-pick-tag');
+  if (!out) return;
+  const dc = dailyContext();
+  if (tag) tag.textContent = `${dc.season} · ${dc.part}`;
+  if (dailyPick.done) { out.textContent = dailyPick.text; return; } // 캐시 재사용
+  if (dailyPick.running) return;
+  dailyPick.running = true;
+  out.classList.add('show', 'streaming');
+  out.textContent = '오늘의 추천을 준비 중…';
+  let first = true;
+  try {
+    dailyPick.text = await askAI('chat', {
+      message: `${dc.season} ${dc.part} ${dc.situation}에 어울리는 컬러 추천해줘`,
+      warmCool: dc.warmCool,
+      situation: dc.situation,
+      products: state.products,
+    }, {
+      onToken: (chunk) => {
+        if (first) { out.textContent = ''; first = false; }
+        out.textContent += chunk;
+      },
+    });
+    dailyPick.done = true;
+  } catch (_e) {
+    // 무인 원칙: 실패해도 카탈로그는 정상. 섹션만 숨긴다.
+    const sec = $('#daily-pick');
+    if (sec) sec.style.display = 'none';
+  } finally {
+    dailyPick.running = false;
+    out.classList.remove('streaming');
+  }
+}
+
 function renderAI() {
   const sitOpts = state.meta.situations.map((s) => `<option value="${esc(s.id)}">${esc(s.label)}</option>`).join('');
   $('#ai-sit').innerHTML = '<option value="">상관없음</option>' + sitOpts;
@@ -495,6 +547,7 @@ async function init() {
   wireEvents();
   wireAI();
   renderCatalog();
+  renderDailyPick(); // 무인 on-load 다이제스트(세션 캐시)
   renderPreview();
   renderRecommend();
   renderAI();
